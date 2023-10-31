@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nkem ToDo</title>
+    <link
+      href="https://unpkg.com/tailwindcss@2.2.4/dist/tailwind.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="w-full h-screen bg-gray-100 pt-8">
+      <div class="bg-white p-3 max-w-md mx-auto">
+        <div class="text-center">
+          <h1 class="text-3xl font-bold">ToDo App</h1>
+          <div class="mt-4 flex">
+            <input
+              id="taskInput"
+              class="w-80 border-b-2 border-gray-500 text-black px-6"
+              type="text"
+              placeholder="Enter your task here"
+            />
+            <button
+              onclick="addTask()"
+              class="ml-2 border-2 border-green-500 p-2 text-green-500 hover:text-white hover:bg-green-500 rounded-lg flex"
+            >
+              <svg
+                class="h-6 w-6"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                stroke-width="2"
+                stroke="currentColor"
+                fill="none"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path stroke="none" d="M0 0h24v24H0z" />
+                <circle cx="12" cy="12" r="9" />
+                <line x1="9" y1="12" x2="15" y2="12" />
+                <line x1="12" y1="9" x2="12" y2="15" />
+              </svg>
+              <span>Add</span>
+            </button>
+          </div>
+        </div>
+        <div class="mt-8">
+          <ul id="taskList">
+            <!-- Tasks will be added here -->
+          </ul>
+        </div>
+        <div class="mt-8">
+          <button
+            onclick="clearCompletedTasks()"
+            class="border-2 border-red-500 p-2 text-red-500"
+          >
+            Clear Completed Tasks
+          </button>
+          <button
+            onclick="resetTodoList()"
+            class="border-2 border-indigo-500 p-2 text-indigo-500 ml-4"
+          >
+            Reset Todo List
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <script>
+  // Function to load tasks from local storage on page load
+  window.addEventListener('load', loadTasksFromLocalStorage);
+
+  // Function to add a task
+  function addTask() {
+    const taskInput = document.getElementById('taskInput');
+    const taskText = taskInput.value.trim();
+    if (taskText) {
+      const taskList = document.getElementById('taskList');
+      const li = document.createElement('li');
+      li.classList.add('p-2', 'rounded-lg');
+      const taskId = Date.now(); // Generate a unique ID for each task
+      li.innerHTML = `
+        <div class="flex align-middle flex-row justify-between">
+          <div class="p-2">
+            <input type="checkbox" class="h-6 w-6" value="true" />
+          </div>
+          <div class="p-2">
+            <p class="text-lg text-black">${taskText}</p>
+          </div>
+          <button onclick="deleteTask(this, ${taskId})"
+            class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg"
+          >
+            <svg
+              class="h-6 w-6 text-red-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            <span>Remove</span>
+          </button>
+        </div>
+        <hr class="mt-2" />
+      `;
+      taskList.appendChild(li);
+      taskInput.value = ''; // Clear input field after adding
+
+      // Store the task in local storage
+      storeTaskInLocalStorage(taskId, taskText);
+    }
+  }
+
+  // Function to delete a task
+  function deleteTask(button, taskId) {
+    const li = button.parentElement.parentElement;
+    li.remove();
+    // Remove the task from local storage
+    removeTaskFromLocalStorage(taskId);
+  }
+
+  // Function to store a task in local storage
+  function storeTaskInLocalStorage(taskId, taskText) {
+    const tasks = getTasksFromLocalStorage();
+    tasks.push({ id: taskId, text: taskText });
+    localStorage.setItem('tasks', JSON.stringify(tasks));
+  }
+
+  // Function to get tasks from local storage
+  function getTasksFromLocalStorage() {
+    const tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+    return tasks;
+  }
+
+  // Function to remove a task from local storage
+  function removeTaskFromLocalStorage(taskId) {
+    const tasks = getTasksFromLocalStorage();
+    const updatedTasks = tasks.filter((task) => task.id !== taskId);
+    localStorage.setItem('tasks', JSON.stringify(updatedTasks));
+  }
+
+  // Function to load tasks from local storage on page load
+  function loadTasksFromLocalStorage() {
+    const tasks = getTasksFromLocalStorage();
+    const taskList = document.getElementById('taskList');
+    tasks.forEach((task) => {
+      const li = document.createElement('li');
+      li.classList.add('p-2', 'rounded-lg');
+      li.innerHTML = `
+        <div class="flex align-middle flex-row justify-between">
+          <div class="p-2">
+            <input type="checkbox" class="h-6 w-6" value="true" />
+          </div>
+          <div class="p-2">
+            <p class="text-lg text-black">${task.text}</p>
+          </div>
+          <button onclick="deleteTask(this, ${task.id})"
+            class="flex text-red-500 border-2 border-red-500 p-2 rounded-lg"
+          >
+            <svg
+              class="h-6 w-6 text-red-500"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="10" />
+              <line x1="15" y1="9" x2="9" y2="15" />
+              <line x1="9" y1="9" x2="15" y2="15" />
+            </svg>
+            <span>Remove</span>
+          </button>
+        </div>
+        <hr class="mt-2" />
+      `;
+      taskList.appendChild(li);
+    });
+  }
+
+  // Function to clear completed tasks
+  function clearCompletedTasks() {
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach((checkbox) => {
+      if (checkbox.checked) {
+        const li = checkbox.parentElement.parentElement.parentElement;
+        li.remove();
+        // Remove the task from local storage
+        removeTaskFromLocalStorage(checkbox.dataset.taskId);
+      }
+    });
+  }
+
+  // Function to reset the todo list
+  function resetTodoList() {
+    const taskList = document.getElementById('taskList');
+    taskList.innerHTML = ''; // Remove all tasks
+    // Clear all tasks from local storage
+    localStorage.removeItem('tasks');
+  }
+</script>
+  </body>
+</html>
